@@ -1,0 +1,16 @@
+{
+  "dataDir": ".agent-bridge",
+  "artifactRoots": ["./workspaces"],
+  "pollIntervalMs": 2000,
+  "requestTimeoutMs": 15000,
+  "reviewer": "codex",
+  "agents": [
+    {
+      "id": "hermes-local",
+      "kind": "hermes",
+      "baseUrl": "http://127.0.0.1:8642",
+      "apiKeyEnv": "HERMES_API_KEY",
+      "maxConcurrency": 1
+    }
+  ]
+}

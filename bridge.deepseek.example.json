@@ -1,0 +1,29 @@
+{
+  "dataDir": ".agent-bridge",
+  "reviewer": "codex",
+  "agents": [
+    {
+      "id": "deepseek-local",
+      "kind": "deepseek",
+      "command": "C:/Program Files/nodejs/node.exe",
+      "args": [
+        "--expose-internals",
+        "C:/path/to/dsh/lib/bin.js",
+        "--profile",
+        "headless",
+        "--patch",
+        "./config/dsh-opencode-go.patch.yml",
+        "--json"
+      ],
+      "cwd": ".",
+      "env": { "DSH_HOME": "C:/path/to/agent-bridge/.agent-bridge/dsh-home" },
+      "inheritEnv": ["OPENCODE_GO_API_KEY"],
+      "modelDefaults": {
+        "provider": "opencode-go",
+        "model": "deepseek-v4.1-flash",
+        "credentialRef": "OPENCODE_GO_API_KEY"
+      },
+      "maxConcurrency": 1
+    }
+  ]
+}

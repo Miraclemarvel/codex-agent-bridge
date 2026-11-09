@@ -1,0 +1,6 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "codex-agent-bridge",
+  "version": "0.3.1",
+  "description": "Delegate tasks to Hermes and DeepSeek Harness from Codex, inspect evidence, and review or request rework."
+}

@@ -1,0 +1,40 @@
+{
+  "name": "codex-agent-bridge",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "format": "prettier --write src tests scripts *.json README.md skills/agent-collaboration/SKILL.md",
+    "start": "node dist/plugin-entry.js",
+    "start:direct": "node dist/mcp.js",
+    "dashboard": "node dist/dashboard.js",
+    "dev": "tsx src/mcp.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "demo": "tsx scripts/demo.ts",
+    "probe": "tsx scripts/probe.ts",
+    "smoke:live": "tsx scripts/live-smoke.ts",
+    "smoke:dsh": "tsx scripts/live-smoke.ts deepseek-local",
+    "check:dsh-model": "tsx scripts/check-dsh-model.ts",
+    "manifest": "node scripts/manifest.mjs",
+    "manifest:http": "node scripts/manifest.mjs --http",
+    "plugin:prepare": "npm run build && node scripts/prepare-plugin.mjs",
+    "service:stop": "tsx scripts/service-stop.ts",
+    "pretest": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

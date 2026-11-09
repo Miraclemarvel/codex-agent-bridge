@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Agent Bridge · 协作控制台</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <aside class="rail">
+      <a class="brand" href="/"
+        ><span class="brand-icon">⇄</span
+        ><span>Agent Bridge<small>协作控制台</small></span></a
+      >
+      <div class="rail-label">工作空间</div>
+      <button class="nav active" id="nav-overview">
+        ◫<span>协作总览</span></button
+      ><button class="nav" id="nav-agents">
+        ⚙<span>Agent 配置</span><span class="tiny-dot"></span>
+      </button>
+      <div class="rail-label agent-label">
+        已配置的 Agent <span id="agent-count">—</span>
+      </div>
+      <div id="agent-list" class="agent-list"></div>
+      <div class="rail-footer">
+        <span class="live-dot"></span> 本地协调服务<small
+          >数据保存在当前工作空间</small
+        ><span class="version">v0.3 · LOCAL</span>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div class="breadcrumb">工作空间 <span>/</span> 协作控制台</div>
+        <div class="header-end">
+          <span class="connection" id="connection">正在连接</span
+          ><button class="ghost" id="refresh">↻ 刷新</button>
+        </div>
+      </header>
+      <section class="page-heading">
+        <div>
+          <div class="eyebrow">YOUR AGENT WORKSPACE</div>
+          <h1>让每一次协作，都有迹可循<span>。</span></h1>
+          <p>分配任务、跟踪交付，让合适的模型完成合适的工作。</p>
+        </div>
+        <button class="primary" id="new-task">＋ 新建任务</button>
+      </section>
+      <div id="notice" role="status" class="notice" hidden></div>
+      <section class="stats" id="stats"></section>
+      <section class="workspace-grid">
+        <div class="board-panel">
+          <div class="section-heading">
+            <div>
+              <h2>任务看板 <span id="task-count" class="count">0</span></h2>
+              <p>从执行到验收，保留完整的交付记录</p>
+            </div>
+            <label class="toggle"
+              ><input id="show-tests" type="checkbox" />显示模型测试</label
+            >
+          </div>
+          <div class="board" id="board"></div>
+        </div>
+        <section class="config-panel" aria-label="Agent 模型配置">
+          <div class="panel-top">
+            <span class="panel-icon">⚙</span>
+            <div>
+              <h2>模型配置</h2>
+              <p>为每个 Agent 选择默认执行模型</p>
+            </div>
+            <span class="tag">独立配置</span>
+          </div>
+          <div class="agent-select">
+            <label
+              >执行 Agent<select
+                id="active-agent"
+                aria-label="选择 Agent"
+              ></select
+            ></label>
+          </div>
+          <div id="config-body">
+            <div class="empty">选择一个 Agent，开始配置模型。</div>
+          </div>
+        </section>
+      </section>
+      <section class="activity-panel">
+        <div class="section-heading">
+          <h2>配置与连接</h2>
+          <span class="muted">默认值变更从新任务开始生效</span>
+        </div>
+        <div id="agent-summary"></div>
+      </section>
+      <footer>
+        Agent 负责执行，你掌握最终验收。<span
+          >请求模型与实际模型分别记录 · 实际值缺失时显示「未回报」</span
+        >
+      </footer>
+    </main>
+    <dialog id="task-dialog">
+      <div class="dialog-heading">
+        <h2 id="dialog-title">任务详情</h2>
+        <button class="icon-button" id="close-dialog" aria-label="关闭">
+          ×
+        </button>
+      </div>
+      <div id="task-detail"></div>
+    </dialog>
+    <dialog id="new-dialog">
+      <div class="dialog-heading">
+        <h2>新建协作任务</h2>
+        <button class="icon-button" id="close-new" aria-label="关闭">×</button>
+      </div>
+      <form id="new-form">
+        <label>执行 Agent<select id="new-agent" required></select></label
+        ><label
+          >任务目标<textarea
+            id="new-objective"
+            required
+            placeholder="说明要完成的工作和预期结果"
+          ></textarea></label
+        ><label
+          >输入版本 / 基线<input
+            id="new-baseline"
+            required
+            placeholder="例如：当前提交号，或资料版本" /></label
+        ><label
+          >操作范围（每行一项）<textarea
+            id="new-scope"
+            required
+            placeholder="例如：只分析当前资料并回复文本"
+          ></textarea></label
+        ><label
+          >交付物（每行一项）<textarea
+            id="new-deliverables"
+            required
+          ></textarea></label
+        ><label
+          >验收标准（每行一项）<textarea
+            id="new-acceptance"
+            required
+          ></textarea>
+        </label>
+        <div class="form-row">
+          <label
+            >最多尝试<input
+              type="number"
+              id="new-attempts"
+              value="3"
+              min="1"
+              max="10" /></label
+          ><label
+            >超时（秒）<input
+              type="number"
+              id="new-timeout"
+              value="1800"
+              min="5"
+              max="86400"
+          /></label>
+        </div>
+        <p class="hint">
+          提交时固定当前模型配置版本；派发后可在看板跟踪和验收。
+        </p>
+        <button class="primary" type="submit">提交任务 →</button>
+      </form>
+    </dialog>
+  </body>
+</html>

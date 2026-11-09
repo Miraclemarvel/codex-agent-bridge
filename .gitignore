@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.agent-bridge/
+.agent-bridge-*/
+bridge.local.json
+mcp.json
+.mcp.json
+.env
+.env.*
+config/*.local.yml
+outputs/
+local-marketplace/
+*.db*
