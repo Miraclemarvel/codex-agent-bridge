@@ -108,6 +108,7 @@ export class ModelManager {
     return {
       agentId: id,
       kind: a.kind,
+      ...(a.kind === "antigravity" ? { agyDefaults: a.agyDefaults } : {}),
       current: s.versions.at(-1)!,
       history: [...s.versions].reverse(),
       tests: s.tests.map((t) => this.testResult(t)).reverse(),
@@ -118,6 +119,11 @@ export class ModelManager {
     if (cached && !refresh && Date.now() - Date.parse(cached.fetchedAt) < 60000)
       return cached;
     const a = this.agent(id);
+    requireThat(
+      a.kind !== "antigravity",
+      "NO_CATALOG",
+      "Antigravity uses the model configured in agy",
+    );
     let result: ModelCatalog;
     if (a.kind === "hermes") {
       const raw = await new HermesAdapter(

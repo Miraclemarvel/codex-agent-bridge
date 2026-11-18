@@ -11,6 +11,12 @@ export const modelSelectionSchema = z
   })
   .strict();
 export type ModelSelection = z.infer<typeof modelSelectionSchema>;
+export const agyModelShape = {
+  model: modelSelectionSchema.shape.model.optional(),
+  reasoningEffort: z.enum(["low", "medium", "high", "xhigh", "max"]).optional(),
+};
+export const agyModelSchema = z.object(agyModelShape).strict();
+export type AgyModelSelection = z.infer<typeof agyModelSchema>;
 export type ModelBinding = {
   revision: number;
   selection: ModelSelection | null;

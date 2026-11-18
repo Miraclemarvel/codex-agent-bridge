@@ -121,6 +121,19 @@ function stats() {
     )
     .join("");
 }
+const agentPresentation = {
+  hermes: { name: "Hermes", initial: "H", transport: "HTTP · Runs API" },
+  deepseek: {
+    name: "DeepSeek Harness",
+    initial: "D",
+    transport: "本地进程 · headless",
+  },
+  antigravity: {
+    name: "Antigravity",
+    initial: "A",
+    transport: "本地进程 · agy",
+  },
+};
 function agents() {
   $("agent-count").textContent = state.agents.length;
   const picker = $("active-agent");
@@ -136,7 +149,7 @@ function agents() {
   $("agent-list").innerHTML = state.agents
     .map(
       (a) =>
-        `<button class="agent-item ${a.agentId === activeId ? "selected" : ""}" data-agent="${esc(a.agentId)}"><span class="avatar ${a.kind === "deepseek" ? "dsh" : ""}">${a.kind === "deepseek" ? "D" : "H"}</span><span>${a.kind === "deepseek" ? "DeepSeek Harness" : "Hermes"}<small>${esc(a.current.selection?.model ?? "跟随后端")}</small></span></button>`,
+        `<button class="agent-item ${a.agentId === activeId ? "selected" : ""}" data-agent="${esc(a.agentId)}"><span class="avatar ${a.kind === "deepseek" ? "dsh" : ""}">${agentPresentation[a.kind].initial}</span><span>${agentPresentation[a.kind].name}<small>${esc(a.current.selection?.model ?? "跟随后端")}</small></span></button>`,
     )
     .join("");
   $("agent-list")
@@ -145,7 +158,7 @@ function agents() {
   $("agent-summary").innerHTML = state.agents
     .map(
       (a) =>
-        `<div class="summary-row"><div>${esc(a.agentId)}<small class="muted">${a.kind === "deepseek" ? "本地进程 · headless" : "HTTP · Runs API"}</small></div><div>${esc(a.current.selection?.provider ?? "后端默认")}<small class="muted">配置版本 v${a.current.revision}</small></div><div class="overflow-wrap">${esc(a.current.selection?.model ?? "未固定模型")}<small class="muted">${a.current.testId ? "已通过连接测试" : "初始配置"}</small></div><button class="ghost" data-agent="${esc(a.agentId)}">配置 ↗</button></div>`,
+        `<div class="summary-row"><div>${esc(a.agentId)}<small class="muted">${agentPresentation[a.kind].transport}</small></div><div>${esc(a.current.selection?.provider ?? "后端默认")}<small class="muted">配置版本 v${a.current.revision}</small></div><div class="overflow-wrap">${esc(a.current.selection?.model ?? "未固定模型")}<small class="muted">${a.current.testId ? "已通过连接测试" : "初始配置"}</small></div><button class="ghost" data-agent="${esc(a.agentId)}">配置 ↗</button></div>`,
     )
     .join("");
   $("agent-summary")
@@ -267,6 +280,13 @@ async function loadAgent(id, refresh = false) {
   const a = agent();
   if (!a) return;
   draftVersion = a.current.revision;
+  if (a.kind === "antigravity") {
+    const model = a.agyDefaults?.model ?? "CLI 默认模型";
+    const effort = a.agyDefaults?.reasoningEffort ?? "CLI 默认强度";
+    $("config-body").innerHTML =
+      `<div class="empty"><strong>${esc(model)} · ${esc(effort)}</strong><br>在 Bridge 配置中设置派单默认值。登录和工具权限由 Antigravity CLI 管理。</div>`;
+    return;
+  }
   $("config-body").innerHTML = '<div class="empty">正在读取实际模型目录…</div>';
   try {
     const c = await api(

@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { Coordinator } from "./coordinator.js";
-import { contractSchema, BridgeError } from "./domain.js";
+import { taskSubmitShape, BridgeError } from "./domain.js";
 import { modelSelectionSchema } from "./models-domain.js";
 import { APP_VERSION } from "./service-identity.js";
 export function createMcpServer(bridge: Coordinator) {
@@ -128,12 +128,8 @@ export function createMcpServer(bridge: Coordinator) {
   );
   tool(
     "task_submit",
-    "Queue a bounded task. Same idempotency key and contract return the same task.",
-    {
-      agentId: z.string(),
-      idempotencyKey: z.string().min(1).max(255),
-      contract: contractSchema,
-    },
+    "Queue a bounded task. For Antigravity, optional model (agy model ID) and reasoningEffort (low, medium, high, xhigh, max) override the corresponding defaults. Reuse an idempotency key with the same contract and overrides.",
+    taskSubmitShape,
     false,
     (a) => bridge.submit(a),
   );
@@ -176,7 +172,7 @@ export function createMcpServer(bridge: Coordinator) {
   );
   tool(
     "task_cancel",
-    "Request cooperative stop; stopping is not cancelled until Hermes confirms exit.",
+    "Request a stop and track the execution until the agent confirms termination.",
     id,
     false,
     (a) => bridge.cancel(a.taskId),

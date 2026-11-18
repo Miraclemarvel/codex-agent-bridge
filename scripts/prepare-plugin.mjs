@@ -14,21 +14,20 @@ mkdirSync(join(market, ".agents", "plugins"), { recursive: true });
 const manifest = {
   ...JSON.parse(readFileSync("plugin.json", "utf8")),
   version,
-  description:
-    "Delegate to Hermes and DeepSeek Harness from Codex; track tasks, review evidence, and configure models.",
   extensions: {
     "com.openai": {
       onboardingSkill: "./skills/agent-bridge-setup/SKILL.md",
       interface: {
         displayName: "Agent Bridge",
-        shortDescription: "让 Codex 调度 Hermes 与 DSH，跟踪交付并独立验收",
+        shortDescription: "让 Codex 派发任务，跟踪交付并独立验收",
         longDescription:
-          "从 Codex 聊天派发任务给本机 Hermes 与 DeepSeek Harness，共用持久化任务服务；支持独立验收、返工和交互式模型配置。",
+          "从 Codex 聊天派发任务给 Hermes、DeepSeek Harness 或 Antigravity。通过共享的本地后台跟踪任务、检查实际交付物并验收。",
         developerName: "Local workspace",
         category: "Productivity",
         capabilities: ["Read", "Write"],
         defaultPrompt: [
           "让 Hermes 执行一个任务，由你跟踪并验收。",
+          "让 Antigravity 用 Gemini 4 Hydrogen 和 High 思考强度实现看板，由你检查源码和预览。",
           "打开 Agent Bridge，看一下各 Agent 的默认模型。",
         ],
       },

@@ -1,6 +1,6 @@
 ---
 name: agent-collaboration
-description: Delegate tasks to Hermes or DeepSeek Harness through Agent Bridge, track execution, independently review deliverables, and request evidence-based rework. Use for external-agent collaboration requested by the user.
+description: Delegate tasks to Hermes, DeepSeek Harness, or Antigravity through Agent Bridge, track execution, independently review deliverables, and request evidence-based rework. Use for external-agent collaboration requested by the user.
 ---
 
 Use the Agent Bridge MCP tools to delegate bounded tasks while Codex owns acceptance.
@@ -14,5 +14,6 @@ Use the Agent Bridge MCP tools to delegate bounded tasks while Codex owns accept
 - If changes are needed, record a `rework` review, then call `task_rework` with its review ID. A fresh API session receives the task, previous delivery, and failing review. Review the new attempt; earlier attempts and reviews remain available. Stop at the contract's attempt limit or unresolved authorization/input.
 - `task_respond` requires the pending control's exact request ID, kind, and generation. Continue within existing authorization; ask the user only for missing input or genuinely new scope. Never auto-approve merely because another agent asks.
 - DeepSeek uses the supported `headless --json` interface: one process per attempt, task text on stdin. Completion requires both a final frame and successful process exit. It has no interactive approvals/clarifications through this adapter; cancel and submit an appropriately clarified task if needed. Capability probing checks launch paths, not model authentication. Reconnecting cannot reconstruct an orphaned local execution; inspect it before further work.
+- Antigravity uses `agy` headless with a configured working directory. Match that directory to the project or worktree before dispatch. When the user specifies a model or reasoning effort, pass the CLI model ID in `task_submit.model` and the effort in `task_submit.reasoningEffort`. Omitted fields inherit the agent defaults. Check the attempt's `agySelection` for the requested route. Use Antigravity CLI to manage login and permissions.
 - `task_cancel` requests stopping. Continue tracking until actual cancellation/exit. Unknown execution outcomes consume capacity: use `task_reconcile` to refresh a known run or recover a lost receipt using its exact saved request/key within Hermes' advertised durable deduplication window. Outside that window, inspect Hermes manually; do not blindly resubmit side-effecting work. A disconnected status poll does not mean the agent stopped.
 - Acceptance records completion of the specified checks. Merging, deploying, posting, or other downstream effects require authorization from the task scope. Report which runtime/environment was actually verified.

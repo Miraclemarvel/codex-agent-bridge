@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { z } from "zod";
 import { parse as parseYaml } from "yaml";
-import { modelSelectionSchema } from "./models-domain.js";
+import { agyModelSchema, modelSelectionSchema } from "./models-domain.js";
 const hermesConfigSchema = z
   .object({
     id: z.string().regex(/^[\w-]+$/),
@@ -30,6 +30,19 @@ const deepseekConfigSchema = z
     maxConcurrency: z.number().int().min(1).max(10).default(1),
   })
   .strict();
+const antigravityConfigSchema = z
+  .object({
+    id: z.string().regex(/^[\w-]+$/),
+    kind: z.literal("antigravity"),
+    command: z.string().min(1),
+    args: z.array(z.string()).default([]),
+    cwd: z.string().min(1),
+    inheritEnv: z.array(z.string()).default([]),
+    modelDefaults: z.never().optional(),
+    agyDefaults: agyModelSchema.optional(),
+    maxConcurrency: z.literal(1).default(1),
+  })
+  .strict();
 export const configSchema = z
   .object({
     dataDir: z.string().default(".agent-bridge"),
@@ -45,6 +58,7 @@ export const configSchema = z
         z.discriminatedUnion("kind", [
           hermesConfigSchema,
           deepseekConfigSchema,
+          antigravityConfigSchema,
         ]),
       )
       .min(1),
@@ -74,6 +88,7 @@ export type Config = z.infer<typeof configSchema>;
 export type AgentConfig = Config["agents"][number];
 export type HermesConfig = Extract<AgentConfig, { kind: "hermes" }>;
 export type DeepSeekConfig = Extract<AgentConfig, { kind: "deepseek" }>;
+export type AntigravityConfig = Extract<AgentConfig, { kind: "antigravity" }>;
 export function loadConfig(
   path = process.env.AGENT_BRIDGE_CONFIG ?? "bridge.local.json",
 ): Config {
@@ -88,9 +103,11 @@ export function loadConfig(
   for (const a of config.agents) {
     if (a.kind === "hermes" && a.apiKeyFile)
       a.apiKeyFile = resolve(dirname(full), a.apiKeyFile);
-    if (a.kind === "deepseek") {
+    if (a.kind === "deepseek" || a.kind === "antigravity") {
       a.command = resolve(dirname(full), a.command);
       a.cwd = resolve(dirname(full), a.cwd);
+    }
+    if (a.kind === "deepseek") {
       if (a.catalogModule)
         a.catalogModule = resolve(dirname(full), a.catalogModule);
       if (a.credentialsFile)

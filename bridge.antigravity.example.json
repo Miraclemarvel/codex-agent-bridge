@@ -1,0 +1,17 @@
+{
+  "dataDir": ".agent-bridge",
+  "artifactRoots": ["./worktrees/project-dashboard"],
+  "dashboard": { "port": 4318 },
+  "agents": [
+    {
+      "id": "antigravity-dashboard",
+      "kind": "antigravity",
+      "command": "C:/path/to/agy.exe",
+      "cwd": "./worktrees/project-dashboard",
+      "agyDefaults": {
+        "model": "gemini-4-hydrogen",
+        "reasoningEffort": "high"
+      }
+    }
+  ]
+}

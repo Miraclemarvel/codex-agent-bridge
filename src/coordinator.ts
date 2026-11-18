@@ -13,16 +13,19 @@ import {
 } from "./domain.js";
 import { sha256, snapshot, captureFiles, filesCurrent } from "./artifacts.js";
 import {
-  HermesAdapter,
   HttpError,
   executionOf,
   type AgentAdapter,
 } from "./adapters/hermes.js";
 import type { Config } from "./config.js";
-import { DeepSeekAdapter } from "./adapters/deepseek.js";
+import { createAdapter } from "./adapters/create.js";
 import { join } from "node:path";
 import { ModelManager } from "./model-manager.js";
-import type { ModelBinding } from "./models-domain.js";
+import {
+  agyModelSchema,
+  type AgyModelSelection,
+  type ModelBinding,
+} from "./models-domain.js";
 
 export class Coordinator {
   readonly store: Store;
@@ -43,12 +46,11 @@ export class Coordinator {
       new Map(
         config.agents.map((a) => [
           a.id,
-          a.kind === "hermes"
-            ? new HermesAdapter(a, config.requestTimeoutMs)
-            : new DeepSeekAdapter(
-                a,
-                join(config.dataDir, "model-overlays", a.id),
-              ),
+          createAdapter(
+            a,
+            config.requestTimeoutMs,
+            join(config.dataDir, "model-overlays", a.id),
+          ),
         ]),
       );
     this.models = new ModelManager(this);
@@ -111,14 +113,16 @@ export class Coordinator {
             kind: a.kind,
             available: false,
             error:
-              "Capability probe failed; check endpoint and key configuration",
+              a.kind === "antigravity"
+                ? "Check the configured agy executable and workspace"
+                : "Capability probe failed; check endpoint and key configuration",
           };
         }
       }),
     );
   }
   submit(
-    input: {
+    input: AgyModelSelection & {
       agentId: string;
       idempotencyKey: string;
       contract: unknown;
@@ -132,8 +136,26 @@ export class Coordinator {
       "Provide an idempotency key of 1–255 characters",
     );
     this.adapter(input.agentId);
+    const agent = this.config.agents.find((a) => a.id === input.agentId);
+    const { model, reasoningEffort } = agyModelSchema.parse({
+      model: input.model,
+      reasoningEffort: input.reasoningEffort,
+    });
+    if (model !== undefined || reasoningEffort !== undefined)
+      requireThat(
+        agent?.kind === "antigravity",
+        "UNSUPPORTED_TASK_MODEL",
+        "Per-task model and reasoningEffort are supported for Antigravity",
+      );
     const contract = contractSchema.parse(input.contract);
-    const hash = sha256(JSON.stringify({ agentId: input.agentId, contract }));
+    const hash = sha256(
+      JSON.stringify({
+        agentId: input.agentId,
+        contract,
+        model,
+        reasoningEffort,
+      }),
+    );
     const existing = this.store.byKey(input.idempotencyKey);
     if (existing) {
       requireThat(
@@ -156,6 +178,11 @@ export class Coordinator {
     lastAttempt(t).modelBinding = structuredClone(
       modelOverride ?? this.models.binding(input.agentId),
     );
+    if (agent?.kind === "antigravity")
+      lastAttempt(t).agySelection = {
+        model: model ?? agent.agyDefaults?.model,
+        reasoningEffort: reasoningEffort ?? agent.agyDefaults?.reasoningEffort,
+      };
     this.store.transaction(() => {
       this.store.insert(t, input.idempotencyKey, hash);
       this.store.event(t, "task.submitted", { agentId: t.agentId });
@@ -185,6 +212,7 @@ export class Coordinator {
         attempt: lastAttempt(t).number,
         purpose: t.purpose ?? "task",
         requestedModel: lastAttempt(t).modelBinding ?? null,
+        requestedAgyModel: lastAttempt(t).agySelection,
         actualModel: lastAttempt(t).remote?.runtime ?? null,
       }));
   }
@@ -670,6 +698,13 @@ export class Coordinator {
               ? this.models.binding(t.agentId)
               : (a.modelBinding ?? { revision: -1, selection: null }),
           );
+          const agent = this.config.agents.find(
+            (entry) => entry.id === t.agentId,
+          );
+          if (agent?.kind === "antigravity")
+            next.agySelection = structuredClone(
+              useLatestDefaults ? agent.agyDefaults : a.agySelection,
+            );
           next.feedback = JSON.stringify({
             previousAttemptId: a.id,
             previousDelivery: {

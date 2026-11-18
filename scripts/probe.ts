@@ -1,13 +1,11 @@
 import { loadConfig } from "../src/config.js";
-import { HermesAdapter } from "../src/adapters/hermes.js";
-import { DeepSeekAdapter } from "../src/adapters/deepseek.js";
+import { createAdapter } from "../src/adapters/create.js";
 const config = loadConfig();
 for (const agent of config.agents) {
   try {
-    const caps = await (
-      agent.kind === "hermes"
-        ? new HermesAdapter(agent, config.requestTimeoutMs)
-        : new DeepSeekAdapter(agent)
+    const caps = await createAdapter(
+      agent,
+      config.requestTimeoutMs,
     ).capabilities();
     console.log(
       JSON.stringify(
@@ -22,7 +20,9 @@ for (const agent of config.agents) {
         id: agent.id,
         available: false,
         message:
-          "Probe failed. Check endpoint, running gateway, and API key source.",
+          agent.kind === "antigravity"
+            ? "Check the configured agy executable and workspace."
+            : "Probe failed. Check endpoint, running gateway, and API key source.",
       }),
     );
     process.exitCode = 1;

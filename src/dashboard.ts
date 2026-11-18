@@ -7,7 +7,7 @@ import { once } from "node:events";
 import { z } from "zod";
 import { Coordinator } from "./coordinator.js";
 import { loadConfig } from "./config.js";
-import { BridgeError, contractSchema } from "./domain.js";
+import { BridgeError, taskSubmitShape } from "./domain.js";
 import { modelSelectionSchema } from "./models-domain.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./mcp-tools.js";
@@ -293,19 +293,7 @@ export async function startDashboard(
         return;
       }
       if (u.pathname === "/api/tasks") {
-        send(
-          bridge.submit(
-            z
-              .object({
-                agentId: z.string(),
-                idempotencyKey: z.string().min(1).max(255),
-                contract: contractSchema,
-              })
-              .strict()
-              .parse(raw),
-          ),
-          202,
-        );
+        send(bridge.submit(z.object(taskSubmitShape).strict().parse(raw)), 202);
         return;
       }
       if (task) {

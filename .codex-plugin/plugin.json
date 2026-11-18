@@ -1,6 +1,6 @@
 {
   "name": "codex-agent-bridge",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Codex delegates to external agents and independently reviews their deliverables.",
   "skills": "./skills/",
   "mcpServers": "./.mcp.json"

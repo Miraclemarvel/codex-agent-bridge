@@ -1,5 +1,9 @@
 import { z } from "zod";
-import type { ModelBinding } from "./models-domain.js";
+import {
+  agyModelShape,
+  type AgyModelSelection,
+  type ModelBinding,
+} from "./models-domain.js";
 export const text = z.string().trim().min(1).max(50000);
 export const contractSchema = z
   .object({
@@ -29,6 +33,12 @@ export const contractSchema = z
       });
   });
 export type Contract = z.infer<typeof contractSchema>;
+export const taskSubmitShape = {
+  agentId: z.string(),
+  idempotencyKey: z.string().min(1).max(255),
+  contract: contractSchema,
+  ...agyModelShape,
+};
 export type Execution =
   | "queued"
   | "submitting"
@@ -83,6 +93,7 @@ export type Attempt = {
   feedback?: string;
   stopRequestedAt?: string;
   modelBinding?: ModelBinding;
+  agySelection?: AgyModelSelection;
 };
 export type Task = {
   id: string;
